@@ -34,39 +34,34 @@ extern crate bio;
 extern crate rust_htslib;
 extern crate regex;
 
+use std::io::*;
 
-use rust_htslib::*;
-use rust_htslib::bam::*;
-use rust_htslib::bam::header::*;
-
-
-use rust_htslib::prelude::*;
-use rust_htslib::bam;
-use rust_htslib::sam;
 
 
 mod ui;
 mod util;
-//mod sam;   // make it happen
 
-//use sam::reader::*;   // make it happen 
 use util::samXbam::*;
+
+
 use ui::cli::*;
 
 
-fn main() {    // add security wrappers
+fn main()-> Result<()>{    // add security wrappers
 
 
     let options = parse_cli();
     
     match options.value_of("direction").unwrap() {
-        "s2b" => {sam2bam(options.value_of("input").unwrap(), options.value_of("output").unwrap_or("stdout"))}
-        "b2s" => {bam2sam(options.value_of("input").unwrap(), options.value_of("output").unwrap_or("stdout"))}
-        _ => {println!("direction not set properly");}
+        "s2b" => {sam2bam(options.value_of("input").unwrap(), 
+                          options.value_of("output").unwrap_or("stdout"))}
+        "b2s" => {bam2sam(options.value_of("input").unwrap(), 
+                          options.value_of("output").unwrap_or("stdout"))}
+        _ => {println!("direction not set properly");Ok(())}
     };
 
 
-
+    Ok(())
     // check return
 
 }

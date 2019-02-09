@@ -20,3 +20,4 @@
 * SOFTWARE.
 */
 pub mod samXbam;
+pub mod sam;

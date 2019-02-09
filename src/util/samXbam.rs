@@ -24,84 +24,42 @@ use rust_htslib::prelude::*;
 use rust_htslib::bam;
 use rust_htslib::sam;
 
-use std::fs::File;
-use std::io::{BufReader,BufRead};
-use regex::Regex;
-
-
-use rust_htslib::*;
-use rust_htslib::bam::*;
-use rust_htslib::bam::header::*;
+use std::io::{Result};
 
 
 
 
-
-// design interface
-
-pub fn sam2bam (samfile: &str, bamfile: &str){
-
-    let mut header = Header::new();
-
-    {     // fn read header
-
-        let file = File::open(samfile).unwrap();
-        let re = Regex::new(r"@(\w+?)\tSN:(.*?)\tLN:(\d+)").unwrap();  // simplyfy the rexeq
+use util::sam::*;
 
 
-        for line in BufReader::new(file).lines() {
-            let r = line.unwrap();
-            match re.captures(&r) {
-                Some(caps) => {                               // match interface here 
-                    header.push_record(
-                    HeaderRecord::new(&(caps[1].as_bytes()))   // only one push for multiple records depending on a recod
-                    .push_tag(b"SN", &(caps[2].to_string()))
-                    .push_tag(b"LN", &(caps[3].to_string().parse::<usize>().unwrap())),   // fn str_slice to int (multiple)
-                    );
-                }
-                None => {
-                    break;
-                }
+pub fn sam2bam(samfile: &str, bamfile: &str)-> Result<()>{
 
-            }
-      
-        }
+    let sam_reader = reader::new(samfile);
+    println!("my filename : {:#?}", sam_reader);
 
-    }
-
-
-        
-        let file = File::open(samfile).unwrap();
-
-        let mut bam_printer =   if bamfile != "stdout" { 
-                                    bam::Writer::from_path(bamfile, &header).unwrap()
-                                }else{
-                                    bam::Writer::from_stdout(&header).unwrap()
-                                };
-
-        let _header = HeaderView::from_header(&header);
-        let re = Regex::new(r"^@.*").unwrap();
-
-        for line in BufReader::new(file).lines() {
-        let r = line.unwrap();
+    let header = sam_reader.header();
     
-        match re.captures(&r) {
-            Some(caps) => {
+    
+    println!("{:#?}", header);
+/*
+    let mut bam_printer =   if bamfile != "stdout" { 
+                                bam::Writer::from_path(bamfile, &header).unwrap()
+                            }else{
+                                bam::Writer::from_stdout(&header).unwrap()
+                            };
 
-                continue;
-            }
-            None => {
-              let mut l  = Record::from_sam(&_header, r.as_bytes()).unwrap();
-              bam_printer.write(&l);
-            }
-
-        }
+// copy reads to new BAM file
+    for record in sam_reader.records() {
+        let r = record.unwrap();
+        bam_printer.write(&r).expect("Line not formated properly !");
     }
+*/
+ Ok(())
 }
 
 
 
-pub fn bam2sam(bamfile: &str, samfile: &str){
+pub fn bam2sam(bamfile: &str, samfile: &str)-> Result<()>{
 
     let mut bam_reader = bam::Reader::from_path(bamfile).unwrap();
 
@@ -116,8 +74,8 @@ pub fn bam2sam(bamfile: &str, samfile: &str){
 // copy reads to new SAM file
     for record in bam_reader.records() {
         let r = record.unwrap();
-        sam_printer.write(&r);
+        sam_printer.write(&r).expect("Line not formated properly !");
     }
 
- 
+ Ok(())
 }
