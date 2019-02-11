@@ -20,40 +20,34 @@
 * SOFTWARE.
 */
 
-use rust_htslib::prelude::*;
 use rust_htslib::bam;
 use rust_htslib::sam;
 
+use rust_htslib::bam::*;
 use std::io::{Result};
-
-
-
-
 use util::sam::*;
+
+
+
 
 
 pub fn sam2bam(samfile: &str, bamfile: &str)-> Result<()>{
 
-    let sam_reader = reader::new(samfile);
-    println!("my filename : {:#?}", sam_reader);
-
+    let sam_reader = ReadSam::new(samfile);
     let header = sam_reader.header();
-    
-    
-    println!("{:#?}", header);
-/*
+
     let mut bam_printer =   if bamfile != "stdout" { 
-                                bam::Writer::from_path(bamfile, &header).unwrap()
+                                bam::Writer::from_path(bamfile, &header ).unwrap()
                             }else{
-                                bam::Writer::from_stdout(&header).unwrap()
+                                bam::Writer::from_stdout( &header).unwrap()
                             };
 
 // copy reads to new BAM file
     for record in sam_reader.records() {
-        let r = record.unwrap();
-        bam_printer.write(&r).expect("Line not formated properly !");
+       let mut l  = Record::from_sam(&(HeaderView::from_header(&header)), record.as_bytes()).unwrap();
+       bam_printer.write(&l).expect("Line not formated properly !");
     }
-*/
+
  Ok(())
 }
 
