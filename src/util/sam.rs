@@ -25,7 +25,7 @@ use rust_htslib::bam::*;
 use rust_htslib::bam::header::*;
 
 use std::fs::File;
-use std::io::{BufReader,Read,BufRead,Result};
+use std::io::{BufReader,BufRead,Result};
 use regex::Regex;
 
 
@@ -36,16 +36,12 @@ pub struct ReadSam{
     samfile: String,
     header: Header,
     fh: File,
-    
 }
-
-
 
 
 
 pub trait Getters {
 	fn get_filename(self)->String;
-	fn header(self)->Header;
 }
 
 
@@ -63,64 +59,52 @@ impl  ReadSam {
                 fh: File::open(file).unwrap(),
             }
         }
-	 pub fn records(self) -> impl Iterator<Item = String> {
-        BufReader::new(self.fh)
+	 pub fn records(self) -> (impl Iterator<Item = String>, Header ){
+        (BufReader::new(self.fh)
             .lines()
             .map(Result::unwrap)
-            .filter(|s| !Regex::new(r"^@").unwrap().is_match(s))
+            .filter(|s| !Regex::new(r"^@").unwrap().is_match(s)),
+         self.header)
     }
-
 }
-
 
 
 impl Getters for ReadSam{
-
 	fn get_filename (self) -> String {
-		self.samfile
+		self.samfile.to_string()
 	}
-	
-	fn header(self)-> Header{
-		self.header
-	}
-
 }
-
-
 
 
 
 impl Parsers for ReadSam {
 	fn parse_header (file: &str) -> Header {
 		let mut header = Header::new();
-		let fh = File::open(file).expect("File not SAM file !");
+		let fh = File::open(file).expect("Not SAM file !");
 		
 		let re_begin = Regex::new(r"^@(\w{2})").unwrap();
         let re_iter  = Regex::new(r"\t(\w{2}):(\w+)").unwrap();
         
-        
         for line in BufReader::new(fh).lines() {
 			let uline = line.unwrap();
-			//println!("{}", uline);
 			match re_begin.captures(&uline) {
                 Some(_caps) => { 
-					for mt in re_iter.captures_iter(&uline) { 
-						//println!("{}: {} - {}", &_caps[1], &mt[1], &mt[2]);
-						header.push_record(
-							HeaderRecord::new(&(_caps[1].as_bytes()))
-							.push_tag(&(mt[1].as_bytes()), &(mt[2].to_string()))
-							);
+					let mut rec = HeaderRecord::new(&(_caps[1].as_bytes()));
+					for mt in re_iter.captures_iter(&uline) {
+						rec.push_tag(mt.get(1).unwrap().as_str().as_bytes(),&mt[2].to_string());	
 					}
+					header.push_record(&rec);
                 }
                 None => {
                     break;
                 }
-
             }
 		}
-		//HeaderView::from_header(&header)
 		header
 	}
 }
+
+
+
 
 

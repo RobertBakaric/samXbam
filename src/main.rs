@@ -21,33 +21,24 @@
 */
 
 
-/*   --------------------  WARNING ----------------------  
-
-                      WORK IN PROGRESS...
-
-     ---------------------------------------------------- */
-
-
 
 extern crate clap;
 extern crate bio;
 extern crate rust_htslib;
 extern crate regex;
 
-use std::io::*;
 
 
 
 mod ui;
 mod util;
 
+
 use util::samXbam::*;
-
-
 use ui::cli::*;
 
 
-fn main()-> Result<()>{    // add security wrappers
+fn main(){    // add security wrappers
 
 
     let options = parse_cli();
@@ -61,7 +52,6 @@ fn main()-> Result<()>{    // add security wrappers
     };
 
 
-    Ok(())
     // check return
 
 }

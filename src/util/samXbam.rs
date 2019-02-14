@@ -34,17 +34,19 @@ use util::sam::*;
 pub fn sam2bam(samfile: &str, bamfile: &str)-> Result<()>{
 
     let sam_reader = ReadSam::new(samfile);
-    let header = sam_reader.header();
+    let rec = sam_reader.records();
 
     let mut bam_printer =   if bamfile != "stdout" { 
-                                bam::Writer::from_path(bamfile, &header ).unwrap()
+                                bam::Writer::from_path(bamfile, &rec.1 ).unwrap()
                             }else{
-                                bam::Writer::from_stdout( &header).unwrap()
+                                bam::Writer::from_stdout( &rec.1).unwrap()
                             };
 
 // copy reads to new BAM file
-    for record in sam_reader.records() {
-       let mut l  = Record::from_sam(&(HeaderView::from_header(&header)), record.as_bytes()).unwrap();
+	let _header = HeaderView::from_header(&rec.1);
+
+    for record in rec.0 {
+       let mut l  = Record::from_sam(&_header, record.as_bytes()).unwrap();
        bam_printer.write(&l).expect("Line not formated properly !");
     }
 
