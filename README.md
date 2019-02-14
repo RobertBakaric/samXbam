@@ -1,4 +1,4 @@
-# samXbam  (UNDER CONSTRUCTION)
+# samXbam
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RobertBakaric/samXbam/blob/master/LICENSE)
 
@@ -17,11 +17,11 @@ cargo install samXbam
 ## Usage
 ```
 
-./samXbam -h.
+samXbam -h.
 
-./samXbam -i in.bam -d b2s -o out.sam
+samXbam -i in.bam -d b2s -o out.sam
 
-./samXbam -i out.sam -d s2b -o in.bam
+samXbam -i out.sam -d s2b -o in.bam
 
 
 ```
