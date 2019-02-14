@@ -31,11 +31,12 @@ use regex::Regex;
 
 
 
+
 #[derive(Debug)]
 pub struct ReadSam{
-    samfile: String,
-    header: Header,
-    fh: File,
+	samfile: String,
+	header: Header,
+	fh: File,
 }
 
 
@@ -52,20 +53,20 @@ trait Parsers {
 
 
 impl  ReadSam {
-    pub fn new(file: &str)-> ReadSam{
-            ReadSam{
-                samfile: file.to_string(),
-                header: ReadSam::parse_header(file),
-                fh: File::open(file).unwrap(),
-            }
-        }
-	 pub fn records(self) -> (impl Iterator<Item = String>, Header ){
-        (BufReader::new(self.fh)
-            .lines()
-            .map(Result::unwrap)
-            .filter(|s| !Regex::new(r"^@").unwrap().is_match(s)),
-         self.header)
-    }
+	pub fn new(file: &str)-> ReadSam{
+		ReadSam{
+			samfile: file.to_string(),
+			header: ReadSam::parse_header(file),
+			fh: File::open(file).unwrap(),
+		}
+	}
+	pub fn records(self) -> (impl Iterator<Item = String>, Header ){
+		(BufReader::new(self.fh)
+			.lines()
+			.map(Result::unwrap)
+			.filter(|s| !Regex::new(r"^@").unwrap().is_match(s)),
+		self.header)
+	}
 }
 
 
@@ -83,28 +84,24 @@ impl Parsers for ReadSam {
 		let fh = File::open(file).expect("Not SAM file !");
 		
 		let re_begin = Regex::new(r"^@(\w{2})").unwrap();
-        let re_iter  = Regex::new(r"\t(\w{2}):(\w+)").unwrap();
+		let re_iter  = Regex::new(r"\t(\w{2}):(\w+)").unwrap();
         
-        for line in BufReader::new(fh).lines() {
+		for line in BufReader::new(fh).lines() {
 			let uline = line.unwrap();
 			match re_begin.captures(&uline) {
-                Some(_caps) => { 
+				Some(_caps) => { 
 					let mut rec = HeaderRecord::new(&(_caps[1].as_bytes()));
 					for mt in re_iter.captures_iter(&uline) {
 						rec.push_tag(mt.get(1).unwrap().as_str().as_bytes(),&mt[2].to_string());	
 					}
 					header.push_record(&rec);
-                }
-                None => {
-                    break;
-                }
-            }
+				}
+				None => {
+					break;
+				}
+			}
 		}
 		header
 	}
 }
-
-
-
-
 
