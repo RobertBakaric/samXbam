@@ -14,7 +14,11 @@ To install samXbam itself:
 cargo install samXbam
 ```
 
+
+
 ## Usage
+Options need to be updated
+
 ```
 
 samXbam -h.
